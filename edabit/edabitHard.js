@@ -13,6 +13,14 @@ function countBoomerangs(arr) {
 
 //Left Shift by Powers of Two
 function shiftToLeft(x, y) {
-	return x*Math.pow(2,y)
+	return x * Math.pow(2,y)
 }
 
+//Return 'Boom' is 7 is in an array
+function sevenBoom(arr) {
+    const isSev = arr.toString();
+    if (isSev.includes('7')) {
+        return 'Boom!'
+    }
+    return 'there is no 7 in the array'
+}
