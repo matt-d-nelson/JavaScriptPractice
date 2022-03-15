@@ -24,3 +24,26 @@ function sevenBoom(arr) {
     }
     return 'there is no 7 in the array'
 }
+
+//Sort an array of objects by an int property
+function sortDrinkByPrice(drinks) {
+	let drinksSorted = drinks.map((x) => x); //This is how an array VALUE is copied and not just its reference ID
+    for(let i = 0; i < drinks.length; i++) {
+        let greaterThan = 0;
+        for (let n = 0; n < drinks.length; n++) {
+            if (drinks[i].price > drinks[n].price) {
+                greaterThan++;
+            }
+        }
+        drinksSorted[greaterThan] = drinks[i]; 
+    }
+    return drinksSorted;
+}
+//Alt method using .sort()
+function sortDrinkByPriceAlt(drinks) {
+    return drinks.sort((a,b)=> a.price - b.price)
+}
+
+//Regular expressions
+const REGEXP = /red flag|blue flag/;
+
