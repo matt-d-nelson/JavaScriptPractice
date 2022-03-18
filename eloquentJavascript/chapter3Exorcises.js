@@ -52,5 +52,3 @@ function countBsRec (str,cnt) {
     }
     return bS + 0;
 }
-
-console.log(countBsRec('BbbBkfdjsldkfjB', 0));
