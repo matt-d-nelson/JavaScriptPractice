@@ -1194,9 +1194,9 @@ var SCRIPTS = [
       return null; //If we process the entire for loop without getting a return, we know that the unicode input is not in any of the script ranges
   }
 
-  function countBy(items, groupName) { //Get array input and a function
-      let counts = []; 
-      for (let item of items) { //For each index in the input array
+function countBy(items, groupName) { //Get array input and a function
+    let counts = []; 
+    for (let item of items) { //For each index in the input array
           let name = groupName(item); //Set name variable to the input function's output when run against the current index of the input array
           let known = counts.findIndex(c => c.name == name); //Check to see if the current instance of 'name' has been added to the 'counts' array yet. Store return index in 'known' variable (-1 if no index is found)
           if (known == -1) { //If the current name is not found in the 'counts' array
@@ -1204,9 +1204,9 @@ var SCRIPTS = [
           } else {
               counts[known].count++; //Add 1 to the count property of the object within the counts array at index 'known'
           }
-      }
+    }
       return counts; //Return the resultant array
-  }
+}
 
 function dominantDirection(text) { //Get an array of text
     let scripts = countBy(text, char => { //Checks every index in text array and returns a new array of objects with the direction value of each checked index
@@ -1218,8 +1218,6 @@ function dominantDirection(text) { //Get an array of text
 
     return scripts.reduce((a, b) => a.count > b.count ? a : b).name; //Use .reduce to find the object with the greatest 'count' perameter. //Use .name to return that objects name.
 }
-
-
 
 console.log(dominantDirection('this is a test'));
 console.log(dominantDirection("Hey, مساء الخير"));
