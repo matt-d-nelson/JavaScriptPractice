@@ -90,7 +90,7 @@ const roads = [
       return new VillageState("Post Office", parcels); //Return the randomly generated VillageState starting at the post office (of course) with the generated parcels
   };
 
-  runRobot(VillageState.random(), randomRobot);
+  //runRobot(VillageState.random(), randomRobot);
 
   function findRoute(graph, from, to) { //Pathfinding function that takes a graph, from, and to values
       let work = [{at: from, route: []}]; //Creates a work object with at being the from value and route being an empty array
@@ -117,7 +117,7 @@ const roads = [
       return {direction: route[0], memory: route.slice(1)}; //return begining of the route array for the direction and the memory of the route with index 0 sliced off
   }
 
-  runRobot(VillageState.random(), goalOrientedRobot, []);
+  //runRobot(VillageState.random(), goalOrientedRobot, []);
 
   //-----------------------------------------------Measuring a Robot-----------------------------------------------//
 
@@ -129,7 +129,6 @@ const roads = [
           r1Results.push(runRobot(randState, r1, []));
           r2Results.push(runRobot(randState, r2, []));
       }
-      //console.log(r1 + 'average completion of: ' + (r1Results.reduce((a,b) => a + b)/r1Results.length));
       let r1Average = (r1Results.reduce((a,b) => a + b)/r1Results.length);
       let r2Average = (r2Results.reduce((a,b) => a + b)/r2Results.length);
       console.log(`Robot 1's average is ${r1Average}`);
@@ -137,30 +136,100 @@ const roads = [
 
   }
 
-  compareRobots(randomRobot, goalOrientedRobot);
+  //compareRobots(randomRobot, goalOrientedRobot);
 
   //-----------------------------------------------Robot Efficiency-----------------------------------------------//
 
-  function betterRobot({place, parcels}, route) { //takes VillageState and route
-    let efficientRoute = [];
-    if (route.length == 0) { //If no moves have been made
+  function closestParcel({place,parcels}) {
+        //Find closest parcel
+        let closestPar = [];
         for (i = 0; i < parcels.length; i++) {
-            let parcel = parcels[i] 
-            if (parcel.place != place) { //If the robot is not at the location of that parcel
-                route = findRoute(roadGraph, place, parcel.place); //find a route to it
-            } else {
-                route = findRoute(roadGraph, place, parcel.address); //Otherwise find a route to its delivery address
-            }
-            if (i == 0) {
-                efficientRoute = route;
-            } else if (route.length < efficientRoute.length) {
-                efficientRoute = route;
+            let curParcel = findRoute(roadGraph, place, parcels[i].place);
+            if ((i === 0) || (curParcel.length < closestPar)) {
+                closestPar = curParcel;
             }
         }
-    }
-    route = efficientRoute;
-    return {direction: route[0], memory: route.slice(1)}; //return begining of the route array for the direction and the memory of the route with index 0 sliced off
+        return closestPar; 
   }
 
-  compareRobots(betterRobot, goalOrientedRobot);
+  function closestAddress({place,parcels}) {
+    //Find closest parcel
+    let closestAdd = [];
+    for (i = 0; i < parcels.length; i++) {
+        let curParcel = findRoute(roadGraph, place, parcels[i].address);
+        if ((i === 0) || (curParcel.length < closestAdd)) {
+            closestAdd = curParcel;
+        }
+    }
+    return closestAdd; 
+}
 
+  function newRoute({place,parcels}) {
+      //Find parcels at our current location and store them in an array
+      let heldParcels = [];
+      for (i = 0; i < parcels.length; i++) {
+          if (parcels[i].place == place) {
+              heldParcels.push(parcels[i]);
+          }
+      }
+      if (heldParcels.length > 0) {
+          parcels = heldParcels
+          return closestAddress({place,parcels});
+      }
+      return closestParcel({place,parcels});
+  }
+
+  function betterRobot({place, parcels}, route) {
+      //Find closest parcel
+      if (route.length == 0) { 
+          route = newRoute({place,parcels});
+      }
+      return {direction: route[0], memory: route.slice(1)};
+  }
+
+  //compareRobots(betterRobot, goalOrientedRobot);
+  
+  function lazyRobot({place, parcels}, route) {
+    if (route.length == 0) {
+      let routes = parcels.map(parcel => {
+        if (parcel.place != place) {
+          return {route: findRoute(roadGraph, place, parcel.place),
+                  pickUp: true};
+        } else {
+          return {route: findRoute(roadGraph, place, parcel.address),
+                  pickUp: false};
+        }
+      });
+  
+      function score({route, pickUp}) {
+        return (pickUp ? 0.5 : 0) - route.length;
+      }
+      route = routes.reduce((a, b) => score(a) > score(b) ? a : b).route;
+    }
+  
+    return {direction: route[0], memory: route.slice(1)};
+  }
+
+  compareRobots(lazyRobot, goalOrientedRobot);
+  
+  //-----------------------------------------------Robot Efficiency-----------------------------------------------//
+
+  class PGroup {
+    constructor(members) {
+      this.members = members;
+    }
+  
+    add(value) {
+      if (this.has(value)) return this;
+      return new PGroup(this.members.concat([value]));
+    }
+  
+    delete(value) {
+      if (!this.has(value)) return this;
+      return new PGroup(this.members.filter(m => m !== value));
+    }
+  
+    has(value) {
+      return this.members.includes(value);
+    }
+  }
