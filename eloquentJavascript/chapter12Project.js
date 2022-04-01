@@ -18,7 +18,7 @@ function parseExpression(program) {
   function skipSpace(string) { //function to skip a spaces in a string
     //let first = string.search(/\S/); //find the first group of characters in a string
     let skippable = string.match(/^(\s|#.*)*/);
-    if (first == -1) return ""; //if search returns -1 there are no groups of characters
+    if (skippable == -1) return ""; //if search returns -1 there are no groups of characters
     return string.slice(skippable[0].length); //slices off the whitespace and comments (#) before a group of characters and returns that value
   }
   
@@ -200,3 +200,27 @@ topScope.element = function(array, n) {
 
 //-----------------------Closure-----------------------//
 //change made to skipSpace to ignore text after a #
+
+//-----------------------Fixing Scope-----------------------//
+specialForms.set = (args, env) => {
+    if (args.length != 2 || args[0].type != "word") { //expects two arguments, the first being a word
+      throw new SyntaxError("Bad use of set"); //throw error if not
+    }
+    let varName = args[0].name; //store the var name in varName
+    let value = evaluate(args[1], env); //store the var value in value
+  
+    for (let scope = env; scope; scope = Object.getPrototypeOf(scope)) { //set scope to equal the current scope(env) //exits loop if scope is null (we have reached the topScope) //set scope to equal the prototype of the current scope (the next most global scope)
+      if (Object.prototype.hasOwnProperty.call(scope, varName)) { //if the current scope has the var
+        scope[varName] = value; //set that var to equal the input value
+        return value; //obligatory return
+      }
+    }
+    throw new ReferenceError(`Setting undefined variable ${varName}`); //if var isn't found after looping through the whole scope, throw a referenceError
+  };
+
+  run(`
+do(define(x, 4),
+   define(setx, fun(val, set(x, val))),
+   setx(50),
+   print(x))
+`);
