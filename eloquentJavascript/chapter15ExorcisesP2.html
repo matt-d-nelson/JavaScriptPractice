@@ -1,0 +1,41 @@
+<!doctype html>
+
+<body>
+
+</body>
+
+<style>
+    .trail {
+        position:absolute;
+        height: 6px; width: 6px;
+        border-radius: 3px;
+        background: teal;
+    }
+    body {
+        height: 300px;
+    }
+</style>
+
+<script>
+    function createTrail(numOfFollowers) {
+        for(i = 0; i < numOfFollowers; i++) {
+            let trail = document.createElement("div");
+            trail.className = "trail";
+            trail.style.left = (Math.random()*500) + "px";
+            trail.style.top = (Math.random()*500) + "px";
+            document.body.appendChild(trail);
+            trails.push(trail);
+        }
+    }
+    let trails = [];
+    createTrail(30);
+    let currentTrail = 0;
+
+    window.addEventListener("mousemove", event => {
+        let thisTrail = trails[currentTrail];
+        thisTrail.style.left = (event.pageX - 3) + "px";
+        thisTrail.style.top = (event.pageY - 3) + "px";
+        currentTrail = (currentTrail + 1) % trails.length;
+    });
+
+</script>
