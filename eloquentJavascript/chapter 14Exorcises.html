@@ -65,43 +65,42 @@
 //-------------------Elements by Tag Name-------------------//
 
 function elementByTag( node, tagName ) {
-    let found = [];
-    tagName = tagName.toUpperCase();
+    let found = []; //Innitialize empty found array
+    tagName = tagName.toUpperCase(); //set the given tagName to all upper case 
 
-    function search(node) {
-        for(let i = 0; i < node.childNodes.length; i++) {
-            let child = node.childNodes[i];
-            if (child.nodeType === document.ELEMENT_NODE) {
-                if (child.NodeName === tagName) {
-                    found.push(child);
-                    search(child);
+    function search(node) { //internal function to search every node
+        for(let i = 0; i < node.childNodes.length; i++) { //loop through each of this nodes child nodes
+            let child = node.childNodes[i]; //set child to the current child node
+            if (child.nodeType === document.ELEMENT_NODE) { //check to see if the node is type 1, element (<>)
+                if (child.NodeName === tagName) { //if the child node's name is the tag we are looking for
+                    found.push(child); //add the child to the found array
+                    search(child); //run search on the child node to see if any of it's children match the tag
                 }
             }
         }
     }
-    search(node);
-    return found;
+    search(node); //innitialize the search
+    return found; //return the array of found nodes
 }
 
 //-------------------The Cat's Hat-------------------//
 
-let cat = document.querySelector("#cat");
-  let mouse = document.querySelector("#mouse");
+let cat = document.querySelector("#cat"); //store the cat element in the cat var
+  let mouse = document.querySelector("#mouse"); //store the mouse element in the mouse var
 
-  let angle = 0;
-  let lastTime = null;
-  function animate(time) {
-    if (lastTime != null) angle += (time - lastTime) * 0.001;
-    lastTime = time;
-    cat.style.top = (Math.sin(angle) * 40 + 40) + "px";
-    cat.style.left = (Math.cos(angle) * 200 + 230) + "px";
+  let angle = 0; //innitialize angle at 0
+  let lastTime = null; //innitialize lastTime at null
+  function animate(time) { 
+    if (lastTime != null) angle += (time - lastTime) * 0.001; //if lastTime is null, increase angle by the ammount of time passed (animated by amount of time passed vs steps to avoid stutters due to performance)
+    lastTime = time; //set lastTime equal to time
+    cat.style.top = (Math.sin(angle) * 40 + 40) + "px"; //adjust the top coordinate of the cat to move up and down on an oval
+    cat.style.left = (Math.cos(angle) * 200 + 230) + "px"; //adjust the left coordinate of the cat to move left and right on an oval
 
     // Your extensions here.
-    mouse.style.top = (Math.sin(angle+Math.PI) * 40 + 40) + "px";
+    mouse.style.top = (Math.sin(angle+Math.PI) * 40 + 40) + "px"; 
     mouse.style.left = (Math.cos(angle+Math.PI) * 200 + 230) + "px";
 
-    requestAnimationFrame(animate);
+    requestAnimationFrame(animate); //tell the browser to update the animation //60 fps //loop
   }
-  requestAnimationFrame(animate);
-
+  requestAnimationFrame(animate); //start the animation
 </script>
