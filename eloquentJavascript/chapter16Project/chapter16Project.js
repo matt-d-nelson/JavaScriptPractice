@@ -9,14 +9,13 @@ let simpleLevelPlan = `
 ......##############..
 ......................`; // '.' = empty space, '#' = wall, '@' = player, '=' = lava that moves horizontally, '+' = lava, 'o' = coin
 
-class Level { //class of object to store level information
+var Level = class Level { //class of object to store level information
     constructor(plan) {
         let rows = plan.trim().split("\n").map(l => [...l]); //.trim removes whitespace, .split("\n") splits the plan at every newline, .map transforms each line into an array 
         //This results in a nested array that stores coordinates of every character, rows[0][0] is the top left corner (rows[y][x])
         this.height = rows.length; //height property stores how many rows (height of level)
         this.width = rows[0].length; //width property stores how many characters are in each row (width of level)
         this.startActors = []; //array for moving objects
-
         this.rows = rows.map((row, y) => { //second argument in map passes the array index //use map on the outer array (index gives y coordinate)
             return row.map((ch, x) => { //use map on inner array (index gives x coordinate)
                 let type = levelChars[ch]; //sets type to the property value of ch in the levelChars object
@@ -29,9 +28,7 @@ class Level { //class of object to store level information
     }
 }
 
-console.log(simpleLevelPlan.trim().split("\n").map(l => [...l]));
-
-class State { //persistant state structure that when updating the game's state, creates a new state leaving the old one intact
+var State = class State { //persistant state structure that when updating the game's state, creates a new state leaving the old one intact
     constructor(level, actors, status) {
         this.level = level;
         this.actors = actors;
@@ -47,7 +44,7 @@ class State { //persistant state structure that when updating the game's state, 
     }
 }
 
-class Vec { //class of object to store information about moving actors
+var Vec = class Vec { //class of object to store information about moving actors
     constructor(x, y) { //coordinates
         this.x = x;
         this.y = y;
@@ -60,7 +57,7 @@ class Vec { //class of object to store information about moving actors
     }
 }
 
-class Player {
+var Player = class Player {
     constructor(pos, speed) {
         this.pos = pos;
         this.speed = speed;
@@ -75,14 +72,14 @@ class Player {
 
 Player.prototype.size = new Vec(0.8, 1.5); //create a size on the prototype because it will never change
 
-class Lava {
+var Lava = class Lava {
     constructor(pos, speed, reset) {
         this.pos = pos;
         this.speed = speed;
         this.reset = reset;
     }
 
-    get type() {return "Lava";}
+    get type() {return "lava";}
 
     static create(pos, ch) { //creates new lava object based on the ch passed into it
         if (ch == "=") {
@@ -97,7 +94,7 @@ class Lava {
 
 Lava.prototype.size = new Vec(1,1);
 
-class Coin {
+var Coin = class Coin {
     constructor(pos, basePos, wobble) {
         this.pos = pos;
         this.basePos = basePos;
@@ -122,8 +119,10 @@ const levelChars = {
     "o": Coin,
     "=": Lava,
     "|": Lava,
-    "v": Lava,
+    "v": Lava
 };
+
+var simpleLevel = new Level(simpleLevelPlan);
 
 function elt(name, attrs, ...children) { //helper function to create an element and assign it attributes and child nodes
     let dom = document.createElement(name);
@@ -136,7 +135,7 @@ function elt(name, attrs, ...children) { //helper function to create an element 
     return dom;
 }
 
-class DOMDisplay {
+var DOMDisplay = class DOMDisplay {
     constructor(parent, level) {
         this.dom = elt("div", {class: "game"}, drawGrid(level));
         this.actorLayer = null;
@@ -152,7 +151,8 @@ function drawGrid(level) {
         class: "background",
         style: `width: ${level.width * scale}px`
     }, ...level.rows.map(row =>
-        elt ("tr", {style: `height: ${scale}px`}, ...row.map(type => elt("td", {class: type}))) //
+        elt ("tr", {style: `height: ${scale}px`}, 
+        ...row.map(type => elt("td", {class: type}))) //
     ));
 }
 
@@ -163,7 +163,7 @@ function drawActors(actors) { //function to draw actors
         rect.style.height = `${actor.size.y * scale}px`;
         rect.style.left = `${actor.pos.x * scale}px`;
         rect.style.top = `${actor.pos.y * scale}px`;
-
+        return rect;
     }))
 }
 
@@ -171,7 +171,7 @@ DOMDisplay.prototype.syncState = function(state) { //method to make the DOM disp
     if (this.actorLayer) this.actorLayer.remove();
     this.actorLayer = drawActors(state.actors);
     this.dom.appendChild(this.actorLayer);
-    this.dom.className = `gmae ${state.status}`;
+    this.dom.className = `game ${state.status}`;
     this.scrollPlayerIntoView(state);
 }
 
@@ -181,7 +181,7 @@ DOMDisplay.prototype.scrollPlayerIntoView = function(state) { //method to ensure
     let margin = width / 3;
 
     // The viewport
-    let left = this.dom.scrolLeft, right = left + width;
+    let left = this.dom.scrollLeft, right = left + width;
     let top = this.dom.scrollTop, bottom = top + height;
 
     let player = state.player;
@@ -199,9 +199,6 @@ DOMDisplay.prototype.scrollPlayerIntoView = function(state) { //method to ensure
     }
 };
 
-let simpleLevel = new Level(simpleLevelPlan);
-let display = new DOMDisplay(document.body, simpleLevel);
-display.syncState(State.start(simpleLevel));
 
 Level.prototype.touches = function(pos, size, type) {
     //ciel and floor to get any grid location where an actor is
@@ -242,7 +239,7 @@ State.prototype.update = function(time, keys) { //function to update game state,
 
 function overlap(actor1, actor2) {
     return actor1.pos.x + actor1.size.x > actor2.pos.x &&
-        actor1.pos.x < actor2.pos.x + actor.size.x &&
+        actor1.pos.x < actor2.pos.x + actor2.size.x &&
         actor1.pos.y + actor1.size.y > actor2.pos.y &&
         actor1.pos.y < actor2.pos.y + actor2.size.y;
 }
@@ -269,7 +266,7 @@ Lava.prototype.update = function(time, state) {
     }
 };
 
-const wobbleSpeed = 8, wobbleDist = 0.07;
+var wobbleSpeed = 8, wobbleDist = 0.07;
 
 Coin.prototype.update = function(time) { //Update coin wobble position
     let wobble = this.wobble + time * wobbleSpeed;
@@ -277,9 +274,9 @@ Coin.prototype.update = function(time) { //Update coin wobble position
     return new Coin(this.basePos.plus(new Vec(0, wobblePos)), this.basePos, wobble);
 };
 
-const playerXSpeed = 7;
-const gravity = 30;
-const jumpSpeed = 17;
+var playerXSpeed = 7;
+var gravity = 30;
+var jumpSpeed = 17;
 
 Player.prototype.update = function(time, state, keys) {
     let xSpeed = 0;
@@ -312,8 +309,63 @@ function trackKeys(keys) {
         }
     }
     window.addEventListener("keydown", track); //listen for the key press
-    window.addEventListener("keyup", track); //listen for the 
-    return down;
+    window.addEventListener("keyup", track); //listen for the key being released
+    return down; //return the state of the key
 }
 
 const arrowKeys = trackKeys(["ArrowLeft", "ArrowRight", "ArrowUp"]);
+
+function runAnimation(frameFunc) {
+    let lastTime = null; //declare lastTime as null
+    function frame(time) { 
+        if (lastTime != null) { //if lastTime isn't null
+            let timeStep = Math.min(time - lastTime, 100) / 1000; //declare timeStep as the lesser of the difference between time and lastTime divided by 1000;
+            if (frameFunc(timeStep) === false) return; 
+        }
+        lastTime = time;
+        requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+}
+
+function runLevel(level, Display) {
+    let display = new Display(document.body, level);
+    let state = State.start(level);
+    let ending = 1;
+    return new Promise(resolve => {
+        runAnimation(time => {
+            state = state.update(time, arrowKeys);
+            display.syncState(state);
+            if (state.status == "playing") {
+                return true;
+            } else if (ending > 0) {
+                ending -= time;
+                return true;
+            } else {
+                display.clear();
+                resolve(state.status);
+                return false;
+            }
+        });
+    });
+}
+
+var lives = 3;
+
+async function runGame(plans, Display) {
+    for (let level = 0; level < plans.length;) {
+        let status = await runLevel(new Level(plans[level]), Display);
+        if (status == "won") level++;
+        //-------------------------------------Game Over-------------------------------------//
+        if (status == "lost") {
+            lives--;
+            if (lives <= 0) {
+                console.log("Game Over");
+                level = 0;
+                lives = 3;
+            }
+            console.log("lives left: ", lives);
+        }
+    }
+    console.log("You've won!");
+}
