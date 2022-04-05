@@ -175,7 +175,7 @@ DOMDisplay.prototype.syncState = function(state) { //method to make the DOM disp
     this.scrollPlayerIntoView(state);
 }
 
-DOMDisplay.prototype.scrollPlayerIntoView = function(state) {
+DOMDisplay.prototype.scrollPlayerIntoView = function(state) { //method to ensure that the player actor is always in camera
     let width = this.dom.clientWidth;
     let height = this.dom.clientHeight;
     let margin = width / 3;
@@ -202,3 +202,118 @@ DOMDisplay.prototype.scrollPlayerIntoView = function(state) {
 let simpleLevel = new Level(simpleLevelPlan);
 let display = new DOMDisplay(document.body, simpleLevel);
 display.syncState(State.start(simpleLevel));
+
+Level.prototype.touches = function(pos, size, type) {
+    //ciel and floor to get any grid location where an actor is
+    let xStart = Math.floor(pos.x);
+    let xEnd = Math.ceil(pos.x + size.x);
+    let yStart = Math.floor(pos.y);
+    let yEnd = Math.ceil(pos.y + size.y);
+
+    //loop through x and y coords of coliding boxes
+    for (let y = yStart; y < yEnd; y++) {
+        for (let x = xStart; x < xEnd; x++) {
+            let isOutside = x < 0 || x >= this.width || y < 0 || y >= this.height; //conditons where isOutside would be true or false
+            let here = isOutside ? "wall" : this.rows[y][x]; //if the actor is outside, treat the grid like a wall so they can't go outside, otherwise get the type at this x,y coordinate
+            if (here == type) return true; //if here matches the given type, return true
+        }
+    }
+    return false;
+}
+
+State.prototype.update = function(time, keys) { //function to update game state, passed a time step and what keys are held down
+    let actors = this.actors.map(actor => actor.update(time, this, keys)); //calls update method on all actors creating an array of updated actors
+    let newState = new State(this.level, actors, this.status);
+
+    if (newState.status != "playing") return newState; //potentially stops the game if in a different state
+
+    let player = newState.player;
+    if (this.level.touches(player.pos, player.size, "lava")) { //if the player is touching lava, return a lost state
+        return new State(this.level, actors, "lost");
+    }
+
+    for (let actor of actors) {
+        if (actor != player && overlap(actor, player)) { //if any actors (excluding the player) are overlapping the player
+            newState = actor.collide(newState); //run the collision code on the collided object 
+        }
+    }
+    return newState;
+};
+
+function overlap(actor1, actor2) {
+    return actor1.pos.x + actor1.size.x > actor2.pos.x &&
+        actor1.pos.x < actor2.pos.x + actor.size.x &&
+        actor1.pos.y + actor1.size.y > actor2.pos.y &&
+        actor1.pos.y < actor2.pos.y + actor2.size.y;
+}
+
+Lava.prototype.collide = function(state) {
+    return new State(state.level, state.actors, "lost");
+};
+
+Coin.prototype.collide = function(state) {
+    let filtered = state.actors.filter(a => a != this);
+    let status = state.status;
+    if (!filtered.some(a => a.type == "coin")) status = "won";
+    return new State(state.level, filtered, status);
+};
+
+Lava.prototype.update = function(time, state) {
+    let newPos = this.pos.plus(this.speed.times(time)); //update the position of the lava
+    if (!state.level.touches(newPos, this.size, "wall")) { //if it hasn't hit a wall
+        return new Lava(newPos, this.speed, this.reset); //advance its position
+    } else if (this.reset) { //if it has a reset value
+        return new Lava(this.reset, this.speed, this.reset); //reset its position
+    } else { 
+        return new Lava(this.pos, this.speed.times(-1)); //have it bounce off the wal
+    }
+};
+
+const wobbleSpeed = 8, wobbleDist = 0.07;
+
+Coin.prototype.update = function(time) { //Update coin wobble position
+    let wobble = this.wobble + time * wobbleSpeed;
+    let wobblePos = Math.sin(wobble) * wobbleDist;
+    return new Coin(this.basePos.plus(new Vec(0, wobblePos)), this.basePos, wobble);
+};
+
+const playerXSpeed = 7;
+const gravity = 30;
+const jumpSpeed = 17;
+
+Player.prototype.update = function(time, state, keys) {
+    let xSpeed = 0;
+    if (keys.ArrowLeft) xSpeed -= playerXSpeed; //adjusting x based on what keys are pressed
+    if (keys.ArrowRight) xSpeed += playerXSpeed;
+    let pos = this.pos;
+    let movedX = pos.plus(new Vec(xSpeed * time, 0));
+    if (!state.level.touches(movedX, this.size, "wall")) { //if not colliding with a wall
+        pos = movedX; //commit movement
+    }
+
+    let ySpeed = this.speed.y + time * gravity; //more complicated than x because of gravity
+    let movedY = pos.plus(new Vec(0, ySpeed * time)); //store potential movement
+    if (!state.level.touches(movedY, this.size, "wall")) { //if the actor isn't going to to hit a wall
+        pos = movedY; //commit movement
+    } else if (keys.ArrowUp && ySpeed > 0) { //if the upArrow is pressed and the actor is touching a wal
+        ySpeed = -jumpSpeed; //set -jumpSpeed to move upward
+    } else { //else if the actor is touching a wall and no keys are pressed
+        ySpeed = 0; //set ySpeed to 0
+    }
+    return new Player(pos, new Vec(xSpeed, ySpeed)); 
+};
+
+function trackKeys(keys) {
+    let down = Object.create(null); //innitialize empty object
+    function track(event) {
+        if (keys.includes(event.key)) { //if the one of keys that are being tracked is part of the event
+            down[event.key] = event.type == "keydown"; //set down at event.key to be true or false if its a keydown or keyup
+            event.preventDefault(); //prevent the page from scrolling because of the arrow press
+        }
+    }
+    window.addEventListener("keydown", track); //listen for the key press
+    window.addEventListener("keyup", track); //listen for the 
+    return down;
+}
+
+const arrowKeys = trackKeys(["ArrowLeft", "ArrowRight", "ArrowUp"]);
