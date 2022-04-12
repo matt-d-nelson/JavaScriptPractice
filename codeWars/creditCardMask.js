@@ -104,5 +104,23 @@ function sameCase(a, b){
   return 0;
 }
 
-
 console.log(sameCase(' ','6'));
+
+/*
+Well met with Fibonacci bigger brother, AKA Tribonacci.
+
+As the name may already reveal, it works basically like a Fibonacci, but summing the last 3 (instead of 2) numbers of the sequence to generate the next. 
+*/
+
+function tribonacci(signature,n){
+  //your code here
+  switch (n) {
+      case 0: return [];
+      case 1: return [signature[0]];
+      case 2: return [signature[0],signature[1]];
+  }
+  while (signature.length < n) {
+    signature.push(signature[signature.length-1] + signature[signature.length-2] + signature[signature.length-3]);
+  }
+  return signature;
+}
