@@ -65,4 +65,24 @@ console.log(XO("ooxx"));
 console.log(XO("ooxXm"));
 console.log(XO("oookdjsfxx"));
 
+/*
+Write a function, persistence, that takes in a positive parameter num and returns its multiplicative persistence, 
+which is the number of times you must multiply the digits in num until you reach a single digit.
+*/
 
+function persistence(num) {
+  //code me
+  let numString = num.toString()
+  let persistenceTot = 0;
+  while(numString.length > 1) {
+    let newNum = 1;
+    for(let i = 0; i < numString.length; i++) {
+      newNum *= Number(numString[i]);
+    }
+    numString = newNum.toString();
+    persistenceTot++;
+  }
+  return persistenceTot;
+}
+
+console.log(persistence(39));
