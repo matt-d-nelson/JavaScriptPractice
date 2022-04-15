@@ -124,3 +124,46 @@ function tribonacci(signature,n){
   }
   return signature;
 }
+
+/*
+Your task is to convert strings to how they would be written by Jaden Smith (every word is capitalized)
+The strings are actual quotes from Jaden Smith, 
+but they are not capitalized in the same way he originally typed them.
+*/
+
+String.prototype.toJadenCase = function () { 
+  return this.split(" ").map(function(word){
+    return word.charAt(0).toUpperCase() + word.slice(1);
+  }).join(" ");
+}
+
+/*
+Write an algorithm that takes an array and moves all of the zeros to the end, 
+preserving the order of the other elements.
+*/
+
+function moveZeros(arr) {
+  let returnArray = [];
+  let zeroCount = 0;
+  for(let i = 0; i < arr.length; i++) {
+    returnArray.push(-1);
+  }
+  for(let i = 0; i < arr.length; i++) {
+    if(arr[i] === 0) {
+      returnArray[returnArray.length-zeroCount-1] = arr[i];
+      zeroCount++;
+    } else {
+      returnArray[i - zeroCount] = arr[i];
+    }
+  }
+  return returnArray;
+}
+
+//built ins method
+var moveZerosBuiltIn = function (arr) {
+  return arr.filter(function(x) {return x !== 0}).concat(arr.filter(function(x) {return x === 0;}));
+}
+
+let testArr = [ 9, 0, 9, 0, 0, 9, 0 ];
+moveZeros(testArr);
+console.log(moveZeros(testArr));
