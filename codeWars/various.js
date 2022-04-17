@@ -167,3 +167,27 @@ var moveZerosBuiltIn = function (arr) {
 let testArr = [ 9, 0, 9, 0, 0, 9, 0 ];
 moveZeros(testArr);
 console.log(moveZeros(testArr));
+
+/*
+Your task is to sort a given string. 
+Each word in the string will contain a single number. 
+This number is the position the word should have in the result.
+*/
+
+function order(words){
+  if(words.length === 0) return "";
+  let wordsArray = words.split(' ');
+  console.log(wordsArray);
+  let returnArray = [];
+  for(let i = 0;i < wordsArray.length; i++) {returnArray.push(-1);}
+  for(let i = 0;i < wordsArray.length; i++) {
+    for(let n =0; n < wordsArray[i].length; n++) {
+      if(!isNan(wordsArray[i][n])) {
+        returnArray[Number(wordsArray[i][n])] = wordsArray[i];
+      }
+    }
+  }
+  return returnArray;
+}
+let testWords = "h1 b4n nm2";
+console.log(order(testWords));
