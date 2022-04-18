@@ -179,15 +179,15 @@ function order(words){
   let wordsArray = words.split(' ');
   console.log(wordsArray);
   let returnArray = [];
-  for(let i = 0;i < wordsArray.length; i++) {returnArray.push(-1);}
+  //for(let i = 0;i < wordsArray.length; i++) {returnArray.push(-1);}
   for(let i = 0;i < wordsArray.length; i++) {
     for(let n =0; n < wordsArray[i].length; n++) {
-      if(!isNan(wordsArray[i][n])) {
-        returnArray[Number(wordsArray[i][n])] = wordsArray[i];
+      if(!isNaN(wordsArray[i][n])) {
+        returnArray[Number(wordsArray[i][n]-1)] = wordsArray[i];
       }
     }
   }
-  return returnArray;
+  return returnArray.join(' ');
 }
-let testWords = "h1 b4n nm2";
+let testWords = "h1 b3n nm2";
 console.log(order(testWords));
