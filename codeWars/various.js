@@ -177,9 +177,8 @@ This number is the position the word should have in the result.
 function order(words){
   if(words.length === 0) return "";
   let wordsArray = words.split(' ');
-  console.log(wordsArray);
   let returnArray = [];
-  //for(let i = 0;i < wordsArray.length; i++) {returnArray.push(-1);}
+  
   for(let i = 0;i < wordsArray.length; i++) {
     for(let n =0; n < wordsArray[i].length; n++) {
       if(!isNaN(wordsArray[i][n])) {
@@ -191,3 +190,34 @@ function order(words){
 }
 let testWords = "h1 b3n nm2";
 console.log(order(testWords));
+
+//RegExpression version
+function orderRE(words){
+  
+  return words.split(' ').sort(function(a, b){
+      return a.match(/\d/) - b.match(/\d/);
+   }).join(' ');
+}    
+
+/*
+Implement the function unique_in_order which takes as argument a sequence and returns a list of items without any 
+elements with the same value next to each other and preserving the original order of elements.
+*/
+
+var uniqueInOrder=function(iterable){
+  //your code here - remember iterable can be a string or an array
+  let returnArray = [];
+  let previousVal = -1;
+  
+  for(let i = 0; i < iterable.length; i++) {
+    if(iterable[i] !== previousVal) {
+      returnArray.push(iterable[i]);
+      previousVal = iterable[i];
+    }
+  }
+  return returnArray;
+}
+
+let testUnique = 'AaaBBCCCC';
+console.log(testUnique.length);
+console.log(uniqueInOrder(testUnique));
