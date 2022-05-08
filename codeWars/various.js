@@ -250,8 +250,29 @@ function validParentheses(parens) {
     if (parens[i] === "(") count++;
     if (count < 0) return false;
   }
-  return true;
+  if (count === 0) return true;
+  return false;
 }
 
 let parensTest = "())(()"
 console.log(validParentheses(parensTest));
+
+function solution(input, markers) {
+  let returnString = "";
+  let addToString = true;
+  for(let i = 0; i < input.length; i++) {
+    if(markers.includes(input[i])) {
+      addToString = false;
+    }
+    if (input[i] == '\n') {
+      addToString = true;
+      returnString.trim();
+    }
+    if (addToString) {
+      returnString += input[i];
+    }
+  }
+  return returnString.trim();
+}
+
+console.log(solution("apples, plums % and bananas\npears\noranges !applesauce", ["%", "!"]));
